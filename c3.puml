@@ -1,0 +1,21 @@
+@startuml c3
+!define Component(component_alias, label, technology) rectangle component_alias as label <<technology>>
+
+package "Node" {
+    Component(TransactionPool, "Transaction Pool", "In-Memory Storage")
+    Component(Consensus, "Consensus Module", "Consensus Algorithm")
+    Component(Gossip, "Gossip Protocol", "P2P Communication")
+    Component(LedgerStorage, "Ledger Storage", "Database")
+}
+
+package "Smart Contracts" {
+    Component(Logic, "Contract Logic", "Business Rules")
+    Component(State, "State Data", "Contract Data")
+}
+
+TransactionPool --> Consensus : "For Validation"
+Consensus --> LedgerStorage : "Stores Blocks"
+Gossip --> TransactionPool : "Broadcast Transactions"
+SmartContracts --> State : "Read/Write State"
+Logic --> LedgerStorage : "Read State for Validation"
+@enduml

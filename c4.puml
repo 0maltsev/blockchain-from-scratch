@@ -1,0 +1,264 @@
+@startuml c4
+namespace core {
+    class Block << (S,Aquamarine) >> {
+        - hash types.Hash
+
+        + Transactions []Transaction
+        + Validator crypto.PublicKey
+        + Signature *crypto.Signature
+
+        + AddTransaction(tx *Transaction) 
+        + Sign(privKey crypto.PrivateKey) error
+        + Verify() error
+        + Decode(r io.Reader, dec ) error
+        + Encode(w io.Writer, enc ) error
+        + Hash(hasher ) types.Hash
+
+    }
+    class BlockHasher << (S,Aquamarine) >> {
+        + Hash(b *Header) types.Hash
+
+    }
+    class BlockValidator << (S,Aquamarine) >> {
+        - bc *Blockchain
+
+        + ValidateBlock(b *Block) error
+
+    }
+    class Blockchain << (S,Aquamarine) >> {
+        - store Storage
+        - lock sync.RWMutex
+        - headers []*Header
+        - validator Validator
+
+        - addBlockWithoutValidation(b *Block) error
+
+        + SetValidator(v Validator) 
+        + AddBlock(b *Block) error
+        + GetHeader(height uint32) (*Header, error)
+        + HasBlock(height uint32) bool
+        + Height() uint32
+
+    }
+    interface Decoder  {
+        + Decode( T) error
+
+    }
+    interface Encoder  {
+        + Encode( T) error
+
+    }
+    class GobTxDecoder << (S,Aquamarine) >> {
+        - r io.Reader
+
+        + Decode(tx *Transaction) error
+
+    }
+    class GobTxEncoder << (S,Aquamarine) >> {
+        - w io.Writer
+
+        + Encode(tx *Transaction) error
+
+    }
+    interface Hasher  {
+        + Hash( T) types.Hash
+
+    }
+    class Header << (S,Aquamarine) >> {
+        + Version uint32
+        + DataHash types.Hash
+        + PrevBlockHash types.Hash
+        + Timestamp int64
+        + Height uint32
+
+        + Bytes() []byte
+
+    }
+    class MemoryStore << (S,Aquamarine) >> {
+        + Put(b *Block) error
+
+    }
+    interface Storage  {
+        + Put( *Block) error
+
+    }
+    class Transaction << (S,Aquamarine) >> {
+        - hash types.Hash
+        - firstSeen int64
+
+        + Data []byte
+        + From crypto.PublicKey
+        + Signature *crypto.Signature
+
+        + Hash(hasher ) types.Hash
+        + Sign(privKey crypto.PrivateKey) error
+        + Verify() error
+        + Decode(dec ) error
+        + Encode(enc ) error
+        + SetFirstSeen(t int64) 
+        + FirstSeen() int64
+
+    }
+    class TxHasher << (S,Aquamarine) >> {
+        + Hash(tx *Transaction) types.Hash
+
+    }
+    interface Validator  {
+        + ValidateBlock( *Block) error
+
+    }
+}
+"core.Header" *-- "core.Block"
+
+"core.Validator" <|-- "core.BlockValidator"
+"core.Storage" <|-- "core.MemoryStore"
+
+namespace crypto {
+    class PrivateKey << (S,Aquamarine) >> {
+        - key *ecdsa.PrivateKey
+
+        + Sign(data []byte) (*Signature, error)
+        + PublicKey() PublicKey
+
+    }
+    class PublicKey << (S,Aquamarine) >> {
+        + Key *ecdsa.PublicKey
+
+        + ToSlice() []byte
+        + Address() types.Address
+
+    }
+    class Signature << (S,Aquamarine) >> {
+        + S *big.Int
+
+        + Verify(pubKey PublicKey, data []byte) bool
+
+    }
+}
+
+
+namespace network {
+    class DecodedMessage << (S,Aquamarine) >> {
+        + From NetAddr
+        + Data any
+
+    }
+    class LocalTransport << (S,Aquamarine) >> {
+        - addr NetAddr
+        - consumeCh <font color=blue>chan</font> RPC
+        - lock sync.RWMutex
+        - peers <font color=blue>map</font>[NetAddr]*LocalTransport
+
+        + Consume() <font color=blue>chan</font> RPC
+        + Connect(tr Transport) error
+        + SendMessage(to NetAddr, payload []byte) error
+        + Broadcast(payload []byte) error
+        + Addr() NetAddr
+
+    }
+    class Message << (S,Aquamarine) >> {
+        + Header MessageType
+        + Data []byte
+
+        + Bytes() []byte
+
+    }
+    class RPC << (S,Aquamarine) >> {
+        + From NetAddr
+        + Payload io.Reader
+
+    }
+    interface RPCProcessor  {
+        + ProcessMessage( *DecodedMessage) error
+
+    }
+    class Server << (S,Aquamarine) >> {
+        - memPool *TxPool
+        - isValidator bool
+        - rpcCh <font color=blue>chan</font> RPC
+        - quitCh <font color=blue>chan</font> <font color=blue>struct</font>{}
+
+        - validatorLoop() 
+        - broadcast(payload []byte) error
+        - processTransaction(tx *core.Transaction) error
+        - broadcastTx(tx *core.Transaction) error
+        - createNewBlock() error
+        - initTransports() 
+
+        + Start() 
+        + ProcessMessage(msg *DecodedMessage) error
+
+    }
+    class ServerOpts << (S,Aquamarine) >> {
+        + ID string
+        + Logger log.Logger
+        + RPCDecodeFunc RPCDecodeFunc
+        + RPCProcessor RPCProcessor
+        + Transports []Transport
+        + BlockTime time.Duration
+        + PrivateKey *crypto.PrivateKey
+
+    }
+    interface Transport  {
+        + Consume() <font color=blue>chan</font> RPC
+        + Connect( Transport) error
+        + SendMessage( NetAddr,  []byte) error
+        + Broadcast( []byte) error
+        + Addr() NetAddr
+
+    }
+    class TxMapSorter << (S,Aquamarine) >> {
+        - transactions []*core.Transaction
+
+        + Len() int
+        + Swap(i int, j int) 
+        + Less(i int, j int) bool
+
+    }
+    class TxPool << (S,Aquamarine) >> {
+        - transactions <font color=blue>map</font>[types.Hash]*core.Transaction
+
+        + Transactions() []*core.Transaction
+        + Add(tx *core.Transaction) error
+        + Has(hash types.Hash) bool
+        + Len() int
+        + Flush() 
+
+    }
+    class network.MessageType << (T, #FF7700) >>  {
+    }
+    class network.NetAddr << (T, #FF7700) >>  {
+    }
+    class network.RPCDecodeFunc << (T, #FF7700) >>  {
+    }
+}
+"network.ServerOpts" *-- "network.Server"
+
+"network.Transport" <|-- "network.LocalTransport"
+"network.RPCProcessor" <|-- "network.Server"
+
+namespace types {
+    class Address << (S,Aquamarine) >> {
+        + ToSlice() []byte
+        + String() string
+
+    }
+    class Hash << (S,Aquamarine) >> {
+        + IsZero() bool
+        + ToSlice() []byte
+        + String() string
+
+    }
+    class types.Address << (T, #FF7700) >>  {
+    }
+    class types.Hash << (T, #FF7700) >>  {
+    }
+}
+
+
+"__builtin__.[]uint8" #.. "types.Address"
+"__builtin__.[]uint8" #.. "types.Hash"
+"__builtin__.byte" #.. "network.MessageType"
+"__builtin__.string" #.. "network.NetAddr"
+"network.<font color=blue>func</font>(RPC) (*DecodedMessage, error)" #.. "network.RPCDecodeFunc"
+@enduml

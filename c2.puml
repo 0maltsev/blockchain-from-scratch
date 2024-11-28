@@ -1,0 +1,22 @@
+@startuml c2
+!define Container(container_alias, label, technology) rectangle container_alias as label <<technology>>
+
+actor User as "End-User"
+
+Container(ClientApp, "Client Application", "Frontend/API")
+Container(API, "API Gateway", "REST/GraphQL")
+Container(Node, "Blockchain Node", "Distributed System")
+Container(SmartContracts, "Smart Contracts", "Business Logic")
+Container(Ledger, "Distributed Ledger", "Database")
+Container(CA, "Certificate Authority", "Identity Management")
+Container(Monitoring, "Monitoring Tools", "Logging/Analytics")
+
+User --> ClientApp : "Submits Transactions"
+ClientApp --> API : "Interacts with Blockchain"
+API --> Node : "Handles Requests"
+Node --> Ledger : "Writes Transactions"
+Node --> SmartContracts : "Executes Logic"
+SmartContracts --> Ledger : "Updates State"
+API --> Monitoring : "Fetch Logs/Analytics"
+API --> CA : "Validates Identity"
+@enduml

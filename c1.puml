@@ -1,0 +1,12 @@
+@startuml c1
+!define Actor(actor_alias, label) actor actor_alias as label
+!define System(system_alias, label) system system_alias as label
+
+Actor(User, "End-User")
+Actor(ThirdParty, "Third-Party Systems")
+
+System(Blockchain, "Private Blockchain System")
+
+User --> Blockchain : "Submit Transactions"
+ThirdParty --> Blockchain : "Query Blockchain Data"
+@enduml
