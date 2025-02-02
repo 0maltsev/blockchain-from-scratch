@@ -3,13 +3,15 @@
 
 actor User as "End-User"
 
-Container(ClientApp, "Client Application", "Frontend/API")
+Container(ClientApp, "Client Application", "Frontend/API") / SDK
 Container(API, "API Gateway", "REST/GraphQL")
 Container(Node, "Blockchain Node", "Distributed System")
 Container(SmartContracts, "Smart Contracts", "Business Logic")
 Container(Ledger, "Distributed Ledger", "Database")
 Container(CA, "Certificate Authority", "Identity Management")
 Container(Monitoring, "Monitoring Tools", "Logging/Analytics")
+
+' TODO разделить сиквенс и компонентную диаграмму; выюор протокола или объединение смарт-контракта и ноды
 
 User --> ClientApp : "Submits Transactions"
 ClientApp --> API : "Interacts with Blockchain"
@@ -18,5 +20,5 @@ Node --> Ledger : "Writes Transactions"
 Node --> SmartContracts : "Executes Logic"
 SmartContracts --> Ledger : "Updates State"
 API --> Monitoring : "Fetch Logs/Analytics"
-API --> CA : "Validates Identity"
+API/Node --> CA : "Validates Identity"
 @enduml

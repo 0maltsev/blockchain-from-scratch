@@ -8,8 +8,9 @@ package "Node" {
     Component(LedgerStorage, "Ledger Storage", "Database")
 }
 
+' TODO VM and add interface class protected
 package "Smart Contracts" {
-    Component(Logic, "Contract Logic", "Business Rules")
+    Component(Logic/VM, "Contract Logic", "Business Rules")
     Component(State, "State Data", "Contract Data")
 }
 

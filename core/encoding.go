@@ -4,6 +4,8 @@ import (
 	"crypto/elliptic"
 	"encoding/gob"
 	"io"
+
+	"github.com/0maltsev/blockchain-from-scratch/crypto"
 )
 
 type Encoder[T any] interface {
@@ -19,7 +21,10 @@ type GobTxEncoder struct {
 }
 
 func NewGobTxEncoder(w io.Writer) *GobTxEncoder {
-	gob.Register(elliptic.P256())
+	ellipticCurve := crypto.EncodingCurveInterface {
+		Curve: elliptic.P256(),
+	}
+	gob.Register(ellipticCurve.Curve)
 	return &GobTxEncoder{
 		w: w,
 	}
@@ -34,7 +39,10 @@ type GobTxDecoder struct {
 }
 
 func NewGobTxDecoder(r io.Reader) *GobTxDecoder {
-	gob.Register(elliptic.P256())
+	ellipticCurve := crypto.EncodingCurveInterface {
+		Curve: elliptic.P256(),
+	}
+	gob.Register(ellipticCurve.Curve)
 	return &GobTxDecoder{
 		r: r,
 	}

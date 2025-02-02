@@ -46,7 +46,6 @@ func NewTxPool() *TxPool {
 	}
 }
 
-
 func (p *TxPool) Transactions() []*core.Transaction {
 	s := NewTxMapSorter(p.transactions)
 	return s.transactions	

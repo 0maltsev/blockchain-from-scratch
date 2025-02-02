@@ -3,7 +3,7 @@
 !define System(system_alias, label) system system_alias as label
 
 Actor(User, "End-User")
-Actor(ThirdParty, "Third-Party Systems")
+Actor(ThirdParty, "Third-Party Systems", "DAPP/Services")
 
 System(Blockchain, "Private Blockchain System")
 

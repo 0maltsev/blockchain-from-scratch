@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"math/big"
-
+	
 	"github.com/0maltsev/blockchain-from-scratch/types"
 )
 
@@ -25,9 +25,15 @@ func (k PrivateKey) Sign(data []byte) (*Signature, error) {
 		S: s,
 	}, nil
 }
+type EncodingCurveInterface struct {
+	Curve elliptic.Curve
+}
 
 func GeneratePrivateKey() PrivateKey {
-	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	ellipticCurve := EncodingCurveInterface {
+		Curve: elliptic.P256(),
+	}
+	key, err := ecdsa.GenerateKey(ellipticCurve.Curve, rand.Reader)
 	if err != nil {
 		panic(err)
 	}
